@@ -10,12 +10,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program. If not, please visit the Free
  * Software Foundation website at <http://www.gnu.org/licenses/>.
@@ -167,7 +167,7 @@ abstract class User extends Model
 		$this->loadLanguageFile('default');
 
 		// Do not continue if username or password are missing
-		if (!$this->Input->post('username') || !$this->Input->post('password'))
+		if (!$this->Input->post('username') || !$this->Input->post('password', true))
 		{
 			return false;
 		}
@@ -183,7 +183,7 @@ abstract class User extends Model
 				foreach ($GLOBALS['TL_HOOKS']['importUser'] as $callback)
 				{
 					$this->import($callback[0], 'objImport', true);
-					$blnLoaded = $this->objImport->$callback[1]($this->Input->post('username'), $this->Input->post('password'), $this->strTable);
+					$blnLoaded = $this->objImport->$callback[1]($this->Input->post('username'), $this->Input->post('password', true), $this->strTable);
 
 					// Load successfull
 					if ($blnLoaded === true)
@@ -244,15 +244,15 @@ abstract class User extends Model
 		list($strPassword, $strSalt) = explode(':', $this->password);
 
 		// Password is correct but not yet salted
-		if (!strlen($strSalt) && $strPassword == sha1($this->Input->post('password')))
+		if (!strlen($strSalt) && $strPassword == sha1($this->Input->post('password', true)))
 		{
 			$strSalt = substr(md5(uniqid(mt_rand(), true)), 0, 23);
-			$strPassword = sha1($strSalt . $this->Input->post('password'));
+			$strPassword = sha1($strSalt . $this->Input->post('password', true));
 			$this->password = $strPassword . ':' . $strSalt;
 		}
 
 		// Check the password against the database
-		if (strlen($strSalt) && $strPassword == sha1($strSalt . $this->Input->post('password')))
+		if (strlen($strSalt) && $strPassword == sha1($strSalt . $this->Input->post('password', true)))
 		{
 			$blnAuthenticated = true;
 		}
@@ -263,7 +263,7 @@ abstract class User extends Model
 			foreach ($GLOBALS['TL_HOOKS']['checkCredentials'] as $callback)
 			{
 				$this->import($callback[0], 'objAuth', true);
-				$blnAuthenticated = $this->objAuth->$callback[1]($this->Input->post('username'), $this->Input->post('password'), $this);
+				$blnAuthenticated = $this->objAuth->$callback[1]($this->Input->post('username'), $this->Input->post('password', true), $this);
 
 				// Authentication successfull
 				if ($blnAuthenticated === true)
